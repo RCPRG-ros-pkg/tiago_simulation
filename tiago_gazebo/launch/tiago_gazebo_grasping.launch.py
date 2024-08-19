@@ -14,7 +14,7 @@
 
 import os
 from os import environ, pathsep
-from ament_index_python.packages import get_package_prefix
+from ament_index_python.packages import get_package_prefix, get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable, SetLaunchConfiguration
 from launch.conditions import IfCondition
@@ -96,32 +96,19 @@ def declare_actions(
 
     launch_description.add_action(gazebo)
 
-    navigation = include_scoped_launch_py_description(
-        pkg_name='tiago_2dnav',
-        paths=['launch', 'tiago_nav_bringup.launch.py'],
+    # rviz2 with config for grasping
+    tiago_gazebo_dir = get_package_share_directory("tiago_gazebo")
+    rviz_config_file = os.path.join(tiago_gazebo_dir, "config", "tiago_grasping.rviz")
+
+    rviz_bringup_launch = include_scoped_launch_py_description(
+        pkg_name="nav2_bringup",
+        paths=["launch", "rviz_launch.py"],
         launch_arguments={
-            "robot_name":  robot_name,
-            "is_public_sim": launch_args.is_public_sim,
-            "laser":  launch_args.laser_model,
-            "base_type": launch_args.base_type,
-            "world_name": launch_args.world_name,
-            'slam': launch_args.slam,
-            'use_sim_time': LaunchConfiguration('use_sim_time'),
-            "use_grasp_fix_plugin": launch_args.use_grasp_fix_plugin,
+            "rviz_config": rviz_config_file
         },
-        condition=IfCondition(LaunchConfiguration('navigation')))
+    )
 
-    launch_description.add_action(navigation)
-
-    advanced_navigation = include_scoped_launch_py_description(
-        pkg_name='tiago_advanced_2dnav',
-        paths=['launch', 'tiago_advanced_nav_bringup.launch.py'],
-        launch_arguments={
-            "base_type": launch_args.base_type,
-        },
-        condition=IfCondition(LaunchConfiguration('advanced_navigation')))
-
-    launch_description.add_action(advanced_navigation)
+    launch_description.add_action(rviz_bringup_launch)
 
     move_group = include_scoped_launch_py_description(
         pkg_name='tiago_moveit_config',
