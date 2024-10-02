@@ -77,7 +77,7 @@ def declare_actions(
     robot_name = 'tiago'
     packages = ['tiago_description', 'pmb2_description',
                 'pal_hey5_description', 'pal_gripper_description',
-                'pal_robotiq_description', 'omni_base_description']
+                'pal_robotiq_description']
 
     model_path = get_model_paths(packages)
 
